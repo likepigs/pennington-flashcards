@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pennington People Flashcards</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+
+        .nav-link {
+            color: #4a90d9;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .nav-link:hover {
+            text-decoration: underline;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            font-size: 0.85rem;
+            color: #888;
+            margin: 15px 0;
+        }
+
+        .stats span {
+            background: rgba(255,255,255,0.1);
+            padding: 5px 12px;
+            border-radius: 20px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4a90d9, #44d944);
+            border-radius: 3px;
+            transition: width 0.3s;
+        }
+
+        .category-filter {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .category-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #e0e0e0;
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+
+        .category-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .category-btn.active {
+            background: #4a90d9;
+            border-color: #4a90d9;
+            color: #fff;
+        }
+
+        .card-container {
+            perspective: 1000px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: linear-gradient(145deg, #2a2a4a 0%, #1e1e3a 100%);
+            border-radius: 16px;
+            min-height: 400px;
+            cursor: pointer;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            position: relative;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        .card.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 16px;
+            padding: 20px;
+        }
+
+        .card-front {
+            background: linear-gradient(145deg, #2a2a4a 0%, #1e1e3a 100%);
+        }
+
+        .card-back {
+            background: linear-gradient(145deg, #1e3a1e 0%, #1a2e1a 100%);
+            transform: rotateY(180deg);
+        }
+
+        .person-photo {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid rgba(255,255,255,0.2);
+            margin-bottom: 20px;
+        }
+
+        .card-hint {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 10px;
+        }
+
+        .card-count {
+            font-size: 0.75rem;
+            color: #555;
+            position: absolute;
+            top: 15px;
+            right: 15px;
+        }
+
+        .person-name {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .person-title {
+            font-size: 1rem;
+            color: #4a90d9;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .person-category {
+            font-size: 0.8rem;
+            background: rgba(74, 144, 217, 0.3);
+            color: #4a90d9;
+            padding: 4px 12px;
+            border-radius: 10px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-again {
+            background: linear-gradient(145deg, #d94444 0%, #b33636 100%);
+            color: #fff;
+        }
+
+        .btn-again:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(217, 68, 68, 0.4);
+        }
+
+        .btn-good {
+            background: linear-gradient(145deg, #44d944 0%, #36b336 100%);
+            color: #fff;
+        }
+
+        .btn-good:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(68, 217, 68, 0.4);
+        }
+
+        .btn-flip {
+            background: linear-gradient(145deg, #4a90d9 0%, #3a7bc8 100%);
+            color: #fff;
+            width: 100%;
+        }
+
+        .btn-flip:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(74, 144, 217, 0.4);
+        }
+
+        .session-complete {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .session-complete h2 {
+            color: #44d944;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+
+        .btn-restart {
+            background: linear-gradient(145deg, #4a90d9 0%, #3a7bc8 100%);
+            color: #fff;
+            margin-top: 20px;
+        }
+
+        .mode-toggle {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .mode-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #e0e0e0;
+            padding: 8px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .mode-btn.active {
+            background: #4a90d9;
+            border-color: #4a90d9;
+        }
+
+        @media (max-width: 500px) {
+            .person-photo {
+                width: 150px;
+                height: 150px;
+            }
+            .card {
+                min-height: 350px;
+            }
+            .controls {
+                flex-direction: column;
+            }
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Pennington People</h1>
+            <a href="index.html" class="nav-link">Back to Knowledge Flashcards</a>
+        </header>
+
+        <div class="stats">
+            <span id="mastered">Mastered: 0</span>
+            <span id="learning">Learning: 0</span>
+            <span id="total">Total: 41</span>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress"></div>
+        </div>
+
+        <div class="mode-toggle">
+            <button class="mode-btn active" data-mode="due">Due</button>
+            <button class="mode-btn" data-mode="all">All</button>
+            <button class="mode-btn" data-mode="shuffle">Shuffle</button>
+        </div>
+
+        <div class="category-filter" id="categories"></div>
+
+        <div id="card-area"></div>
+    </div>
+
+    <script>
+        const people = [
+            { id: 1, name: "Brian Gaister", title: "Co-Founder, CEO", category: "Leadership", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/80bf71a3-7677-4e91-9b95-2e374208e944/f_220042_110016_8x10.jpg" },
+            { id: 2, name: "Rodd Macklin", title: "Co-Founder, Senior Managing Director", category: "Leadership", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/1633905262294-O1KLD0YCSKDLFWNF9YJ9/Rodd%2BMacklin.jpg" },
+            { id: 3, name: "Kent Andrews", title: "Partner, Investments", category: "Leadership", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/1638898224652-QHE08BDVK9JS4ACLG7T0/Kent%2BAndrews_8x10.jpg" },
+            { id: 4, name: "Jill Sheppard Davenport", title: "Partner, Director of Health and Wellness", category: "Leadership", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/1e0953ea-ad53-43c4-bb4a-535f500e03ec/DSC_7717rev1.jpg" },
+            { id: 5, name: "Michael Rubenstein", title: "Partner, Director of Income & Estate Tax Minimization", category: "Leadership", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/356377f1-e97e-415a-8083-6aa713015138/Rubenstein_0946_4x6print_bw.jpg" },
+            { id: 6, name: "Keith Kellum", title: "Partner & Portfolio Manager", category: "Leadership", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/6f7020f3-2239-48e8-b59d-b6dc67bbd552/k.png" },
+            { id: 7, name: "Marilyn Santiago", title: "Partner & Head of Relationship Management", category: "Leadership", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/41c930fe-f726-43de-a6d3-2588303a6033/M.png" },
+            { id: 8, name: "Wendy Xu", title: "Managing Director, Private Markets", category: "Investments", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/fcea32f1-e26a-4e68-8e1e-417906604149/Wendy+Xu+-+Headshot.jpg" },
+            { id: 9, name: "Taylor Coe", title: "Managing Director, Pennington Real Estate Partners", category: "Real Estate", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/da1de05b-5b0a-4dbc-9d9b-97e8c3f058d0/Taylor.jpg" },
+            { id: 10, name: "Alex Rongione", title: "Managing Director, Pennington Real Estate Partners", category: "Real Estate", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/00b21095-1596-433f-a61f-5c7b837befcc/Alex.jpg" },
+            { id: 11, name: "Trey Sheain", title: "Portfolio Manager, CFA", category: "Investments", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/54fc879a-6a96-4745-93c4-67862ecc1409/Sheain_1002_4x4print_Square_BW.jpg" },
+            { id: 12, name: "Matthew Devine", title: "Portfolio Manager, CFA", category: "Investments", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/bd070fda-8e31-4d71-886f-3be6750d75dd/Matt+Devine+-+headshot.jpg" },
+            { id: 13, name: "William Lowrie", title: "Portfolio Manager, CFA", category: "Investments", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/d2575a2a-a844-4821-8ec3-7e2b2146fd30/Will+Lowrie-modified.jpg" },
+            { id: 14, name: "Megan Bleil", title: "Partner, Family Office Advisor", category: "Client Services", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/1634746751089-OFA1WQ0V8342Z05072ZN/Megan%2BBleil_new%2BBIG%2BFILE.jpg" },
+            { id: 15, name: "Will Halkyard", title: "Client Relationship Officer", category: "Client Services", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/c7e6d5b7-07e7-41b3-96e1-6f34b4048f3d/Will+Helkart+Headshot.png" },
+            { id: 16, name: "Olimpia Sulla", title: "Director, Wealth Strategy & Estate Planning", category: "Client Services", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/d0e3f38e-ca96-4e1d-8aba-5b1d2e631404/f_240046_110051.jpg" },
+            { id: 17, name: "Megan Graf", title: "Senior Operations Advisor", category: "Operations", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/425098c5-315c-4293-bc7e-665d91e039c4/Graf%2C+Megan3656-headshot-full_frame-hires_bw+%282%29+%281%29.jpg" },
+            { id: 18, name: "Guy Scott", title: "Chief Compliance Officer", category: "Operations", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/eb81bebd-2f56-4ec2-8863-8036e125b21e/u_210122_110082+Pennington.jpg" },
+            { id: 19, name: "David Bell", title: "Senior Legal Advisor", category: "Operations", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/77751dea-4029-4697-a8a4-60595c01cbfe/Screenshot+2025-06-18+152237.png" },
+            { id: 20, name: "Chad Lilly", title: "Vice President, Head of Talent Acquisition", category: "Operations", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/00e05149-7353-493a-8dc7-a2c7d8507e35/Chad+Lilly+-+Headshot.jpg" },
+            { id: 21, name: "John Rizas", title: "Director of Finance", category: "Finance", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/17eda384-47c9-447d-857c-5144100e6d60/Rizas_Headshot.jpg" },
+            { id: 22, name: "Nadia Khan", title: "Senior Staff Accountant", category: "Finance", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/f801e0d7-12ee-47c0-8d93-732daede3e4f/Nadia+headshot.jpg" },
+            { id: 23, name: "Jacob Reinhardt", title: "Investment Analyst", category: "Investments", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/24417788-c8df-434f-8701-0af8526d462e/Jacob+Reinhardt+Headshot.png" },
+            { id: 24, name: "Longhe Cao", title: "Investment Analyst", category: "Investments", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/649d0be1-5e49-4c72-89ea-26067215964b/Longhe+Cao+Headshot.png" },
+            { id: 25, name: "Nicole Clark-Ramirez", title: "Health & Wellness Specialist", category: "Client Services", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/683f4d8f-5eeb-4794-a779-bcafccc333b1/unnamed.png" },
+            { id: 26, name: "Jamie McLaughlin", title: "Senior Advisor", category: "Senior Advisors", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/6faa2093-a1df-481b-9eb6-1b043b36058c/Jamie+McLaughlin.jpg" },
+            { id: 27, name: "Philip Strassler", title: "Senior Advisor, CPA", category: "Senior Advisors", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/14fbbdfd-ffa5-40d7-a66e-c9862839ad3c/strassler.jpg" },
+            { id: 28, name: "Roger Staiger", title: "Senior Real Estate Advisor", category: "Senior Advisors", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/1636058549216-VID20KECP4LX4XJWSHZ3/RPS_Pic.jpg" },
+            { id: 29, name: "Tommy Wright", title: "Senior Advisor", category: "Senior Advisors", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/d4ac55c8-6103-486f-ba01-7cf4f65b2577/Screenshot+2025-06-03+102915.png" },
+            { id: 30, name: "Sehkar Puli", title: "Senior Advisor", category: "Senior Advisors", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/09fc5595-fd9e-422d-ad9d-d867e5bfe677/Sehkar+Headshot.png" },
+            { id: 31, name: "Barak Kaufman", title: "Senior Advisor", category: "Senior Advisors", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/9cfa91b6-a509-4399-be7d-6abef54c7906/Barak+Headshot.png" },
+            { id: 32, name: "David Homan", title: "Senior Advisor", category: "Senior Advisors", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/e251c428-516a-43e2-b724-f9b84a7536dd/Daivd+Homan+.png" },
+            { id: 33, name: "Eric Rosen", title: "Senior Advisor", category: "Senior Advisors", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/2aa6e7fd-144c-4214-a515-5aaada91233f/Eric+Rosen.jpg" },
+            { id: 34, name: "Daniel Erem", title: "Senior Advisor", category: "Senior Advisors", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/1dfc7bd5-736d-4ffd-b780-27603f90db45/Daniel+Erem.png" },
+            { id: 35, name: "Tod Trabocco", title: "Senior Advisor", category: "Senior Advisors", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/3823009c-4fcf-487d-b650-9bebf7fea6ce/Tod%252BTrabocco.jpeg" },
+            { id: 36, name: "Lauren Lennahan", title: "Marketing Manager", category: "Operations", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/c5d81661-1e28-478f-a403-1e62d378698f/Lauren+Headshot.png" },
+            { id: 37, name: "Jake Brophy", title: "Senior Associate, Operations", category: "Operations", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/79372e0b-0b51-4b14-9bd3-5a79daefea3a/Jake+Brophy.jpg" },
+            { id: 38, name: "Odessa Clear", title: "Operations Associate", category: "Operations", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/4a08994c-f565-47c9-8511-6821fe168302/Odessa+Clear+Headshot.png" },
+            { id: 39, name: "Hannah Aurich", title: "Client Relationship Officer", category: "Client Services", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/be9327ff-fe67-4cda-abc9-dfddcf48d9bb/Hannah+Aurich.jpg" },
+            { id: 40, name: "Ben Pieroni", title: "Client Relationship Officer", category: "Client Services", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/3c2209f3-824b-4fb9-a81e-4ccbe1528808/Screenshot+2025-12-30+124810.png" },
+            { id: 41, name: "Courtney Bates", title: "Executive Assistant", category: "Operations", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/943dbabd-dc6d-455d-8349-0fdc3db5c40e/Bates_2356_500x500px_72dpi_Square.jpg" }
+        ];
+
+        let cardProgress = JSON.parse(localStorage.getItem('pennington-people') || '{}');
+        let currentMode = 'due';
+        let currentCategory = 'all';
+        let currentDeck = [];
+        let currentIndex = 0;
+        let isFlipped = false;
+        let sessionStats = { correct: 0, incorrect: 0 };
+
+        const categories = ['all', ...new Set(people.map(p => p.category))];
+
+        people.forEach(person => {
+            if (!cardProgress[person.id]) {
+                cardProgress[person.id] = { level: 0, nextReview: Date.now(), lastReview: null };
+            }
+        });
+        saveProgress();
+
+        const cardArea = document.getElementById('card-area');
+        const categoriesEl = document.getElementById('categories');
+        const progressEl = document.getElementById('progress');
+        const masteredEl = document.getElementById('mastered');
+        const learningEl = document.getElementById('learning');
+        const totalEl = document.getElementById('total');
+
+        function renderCategories() {
+            categoriesEl.innerHTML = categories.map(cat =>
+                `<button class="category-btn ${currentCategory === cat ? 'active' : ''}" data-category="${cat}">${cat === 'all' ? 'All' : cat}</button>`
+            ).join('');
+            categoriesEl.querySelectorAll('.category-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    currentCategory = btn.dataset.category;
+                    renderCategories();
+                    buildDeck();
+                    renderCard();
+                });
+            });
+        }
+
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentMode = btn.dataset.mode;
+                buildDeck();
+                renderCard();
+            });
+        });
+
+        function buildDeck() {
+            let cards = people;
+            if (currentCategory !== 'all') {
+                cards = cards.filter(p => p.category === currentCategory);
+            }
+            if (currentMode === 'due') {
+                const now = Date.now();
+                cards = cards.filter(p => cardProgress[p.id].nextReview <= now || cardProgress[p.id].level === 0);
+                cards.sort((a, b) => cardProgress[a.id].level - cardProgress[b.id].level);
+            } else if (currentMode === 'shuffle') {
+                cards = [...cards].sort(() => Math.random() - 0.5);
+            }
+            currentDeck = cards;
+            currentIndex = 0;
+            isFlipped = false;
+            sessionStats = { correct: 0, incorrect: 0 };
+        }
+
+        function getNextReview(level) {
+            const intervals = [0, 60000, 600000, 3600000, 86400000, 604800000];
+            return Date.now() + (intervals[level] || intervals[5]);
+        }
+
+        function saveProgress() {
+            localStorage.setItem('pennington-people', JSON.stringify(cardProgress));
+        }
+
+        function updateStats() {
+            const mastered = people.filter(p => cardProgress[p.id].level >= 5).length;
+            const learning = people.filter(p => cardProgress[p.id].level > 0 && cardProgress[p.id].level < 5).length;
+            masteredEl.textContent = `Mastered: ${mastered}`;
+            learningEl.textContent = `Learning: ${learning}`;
+            totalEl.textContent = `Total: ${people.length}`;
+            progressEl.style.width = `${(mastered / people.length) * 100}%`;
+        }
+
+        function renderCard() {
+            updateStats();
+            if (currentDeck.length === 0 || currentIndex >= currentDeck.length) {
+                if (currentMode === 'due' && currentDeck.length === 0) {
+                    cardArea.innerHTML = `<div class="session-complete"><h2>All caught up!</h2><p>No people due for review.</p><button class="btn btn-restart" onclick="location.reload()">Refresh</button></div>`;
+                } else {
+                    cardArea.innerHTML = `<div class="session-complete"><h2>Session Complete!</h2><p>Correct: ${sessionStats.correct} | Needs Review: ${sessionStats.incorrect}</p><button class="btn btn-restart" onclick="restartSession()">Start New Session</button></div>`;
+                }
+                return;
+            }
+            const person = currentDeck[currentIndex];
+            cardArea.innerHTML = `
+                <div class="card-container">
+                    <div class="card ${isFlipped ? 'flipped' : ''}" onclick="flipCard()">
+                        <div class="card-face card-front">
+                            <span class="card-count">${currentIndex + 1} / ${currentDeck.length}</span>
+                            <img src="${person.photo}" alt="Who is this?" class="person-photo" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22><rect fill=%22%23333%22 width=%22200%22 height=%22200%22/><text fill=%22%23666%22 x=%22100%22 y=%22110%22 text-anchor=%22middle%22>No Photo</text></svg>'">
+                            <div class="card-hint">Who is this? Tap to reveal</div>
+                        </div>
+                        <div class="card-face card-back">
+                            <span class="card-count">${currentIndex + 1} / ${currentDeck.length}</span>
+                            <img src="${person.photo}" alt="${person.name}" class="person-photo" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22><rect fill=%22%23333%22 width=%22200%22 height=%22200%22/><text fill=%22%23666%22 x=%22100%22 y=%22110%22 text-anchor=%22middle%22>No Photo</text></svg>'">
+                            <div class="person-name">${person.name}</div>
+                            <div class="person-title">${person.title}</div>
+                            <div class="person-category">${person.category}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="controls">
+                    ${isFlipped ? `
+                        <button class="btn btn-again" onclick="markCard(false)">Again</button>
+                        <button class="btn btn-good" onclick="markCard(true)">Got it</button>
+                    ` : `
+                        <button class="btn btn-flip" onclick="flipCard()">Reveal</button>
+                    `}
+                </div>
+            `;
+        }
+
+        function flipCard() {
+            isFlipped = !isFlipped;
+            renderCard();
+        }
+
+        function markCard(correct) {
+            const person = currentDeck[currentIndex];
+            const progress = cardProgress[person.id];
+            if (correct) {
+                progress.level = Math.min(5, progress.level + 1);
+                sessionStats.correct++;
+            } else {
+                progress.level = Math.max(0, progress.level - 1);
+                sessionStats.incorrect++;
+            }
+            progress.nextReview = getNextReview(progress.level);
+            progress.lastReview = Date.now();
+            saveProgress();
+            currentIndex++;
+            isFlipped = false;
+            renderCard();
+        }
+
+        function restartSession() {
+            buildDeck();
+            renderCard();
+        }
+
+        renderCategories();
+        buildDeck();
+        renderCard();
+    </script>
+</body>
+</html>
