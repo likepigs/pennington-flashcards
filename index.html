@@ -5,316 +5,90 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pennington Flashcards</title>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             min-height: 100vh;
             color: #e0e0e0;
             padding: 20px;
         }
-
-        .container {
-            max-width: 700px;
-            margin: 0 auto;
-        }
-
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        h1 {
-            font-size: 1.8rem;
-            margin-bottom: 10px;
-            color: #fff;
-        }
-
-        .nav-link {
-            color: #4a90d9;
-            text-decoration: none;
-            font-size: 0.9rem;
-        }
-
-        .nav-link:hover {
-            text-decoration: underline;
-        }
-
+        .container { max-width: 700px; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 30px; }
+        h1 { font-size: 1.8rem; margin-bottom: 10px; color: #fff; }
         .stats {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            font-size: 0.9rem;
-            color: #888;
+            display: flex; justify-content: center; gap: 20px;
+            font-size: 0.9rem; color: #888;
         }
-
-        .stats span {
-            background: rgba(255,255,255,0.1);
-            padding: 5px 12px;
-            border-radius: 20px;
-        }
-
-        .category-filter {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            justify-content: center;
-            margin-bottom: 20px;
-        }
-
+        .stats span { background: rgba(255,255,255,0.1); padding: 5px 12px; border-radius: 20px; }
+        .category-filter { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 20px; }
         .category-btn {
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
-            color: #e0e0e0;
-            padding: 8px 16px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            transition: all 0.2s;
+            background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+            color: #e0e0e0; padding: 8px 16px; border-radius: 20px;
+            cursor: pointer; font-size: 0.85rem; transition: all 0.2s;
         }
-
-        .category-btn:hover {
-            background: rgba(255,255,255,0.2);
-        }
-
-        .category-btn.active {
-            background: #4a90d9;
-            border-color: #4a90d9;
-            color: #fff;
-        }
-
-        .card-container {
-            perspective: 1000px;
-            margin-bottom: 20px;
-        }
-
+        .category-btn:hover { background: rgba(255,255,255,0.2); }
+        .category-btn.active { background: #4a90d9; border-color: #4a90d9; color: #fff; }
+        .card-container { perspective: 1000px; margin-bottom: 20px; }
         .card {
             background: linear-gradient(145deg, #2a2a4a 0%, #1e1e3a 100%);
-            border-radius: 16px;
-            min-height: 300px;
-            padding: 30px;
-            cursor: pointer;
-            transition: transform 0.6s;
-            transform-style: preserve-3d;
-            position: relative;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            border-radius: 16px; min-height: 320px; cursor: pointer;
+            transition: transform 0.6s; transform-style: preserve-3d;
+            position: relative; box-shadow: 0 10px 40px rgba(0,0,0,0.3);
         }
-
-        .card.flipped {
-            transform: rotateY(180deg);
-        }
-
+        .card.flipped { transform: rotateY(180deg); }
         .card-face {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            padding: 30px;
-            backface-visibility: hidden;
-            display: flex;
-            flex-direction: column;
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            padding: 30px; backface-visibility: hidden;
+            display: flex; flex-direction: column; align-items: center;
             border-radius: 16px;
         }
-
-        .card-front {
-            background: linear-gradient(145deg, #2a2a4a 0%, #1e1e3a 100%);
+        .card-front { background: linear-gradient(145deg, #2a2a4a 0%, #1e1e3a 100%); }
+        .card-back { background: linear-gradient(145deg, #1e3a1e 0%, #1a2e1a 100%); transform: rotateY(180deg); overflow-y: auto; }
+        .card-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #888; margin-bottom: 15px; }
+        .card-category { font-size: 0.7rem; background: rgba(74, 144, 217, 0.3); color: #4a90d9; padding: 4px 10px; border-radius: 10px; margin-bottom: 15px; }
+        .card-content { flex: 1; font-size: 1.1rem; line-height: 1.6; text-align: left; width: 100%; }
+        .card-content ul, .card-content ol { margin-left: 20px; margin-top: 10px; }
+        .card-content li { margin-bottom: 8px; }
+        .card-content strong { color: #4a90d9; }
+        .card-hint { font-size: 0.8rem; color: #666; text-align: center; margin-top: 20px; }
+        .person-photo {
+            width: 180px; height: 180px; border-radius: 50%; object-fit: cover;
+            border: 4px solid rgba(255,255,255,0.2); margin-bottom: 15px;
         }
-
-        .card-back {
-            background: linear-gradient(145deg, #1e3a1e 0%, #1a2e1a 100%);
-            transform: rotateY(180deg);
-            overflow-y: auto;
-        }
-
-        .card-label {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #888;
-            margin-bottom: 15px;
-        }
-
-        .card-category {
-            font-size: 0.7rem;
-            background: rgba(74, 144, 217, 0.3);
-            color: #4a90d9;
-            padding: 4px 10px;
-            border-radius: 10px;
-            display: inline-block;
-            margin-bottom: 15px;
-        }
-
-        .card-content {
-            flex: 1;
-            font-size: 1.1rem;
-            line-height: 1.6;
-        }
-
-        .card-content ul, .card-content ol {
-            margin-left: 20px;
-            margin-top: 10px;
-        }
-
-        .card-content li {
-            margin-bottom: 8px;
-        }
-
-        .card-content strong {
-            color: #4a90d9;
-        }
-
-        .card-hint {
-            font-size: 0.8rem;
-            color: #666;
-            text-align: center;
-            margin-top: 20px;
-        }
-
-        .controls {
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-        }
-
+        .person-name { font-size: 1.4rem; font-weight: 600; color: #fff; margin-bottom: 8px; text-align: center; }
+        .person-title { font-size: 0.95rem; color: #4a90d9; text-align: center; }
+        .controls { display: flex; gap: 12px; justify-content: center; }
         .btn {
-            padding: 14px 28px;
-            border: none;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
+            padding: 14px 28px; border: none; border-radius: 12px;
+            font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s;
         }
-
-        .btn-again {
-            background: linear-gradient(145deg, #d94444 0%, #b33636 100%);
-            color: #fff;
-        }
-
-        .btn-again:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(217, 68, 68, 0.4);
-        }
-
-        .btn-good {
-            background: linear-gradient(145deg, #44d944 0%, #36b336 100%);
-            color: #fff;
-        }
-
-        .btn-good:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(68, 217, 68, 0.4);
-        }
-
-        .btn-flip {
-            background: linear-gradient(145deg, #4a90d9 0%, #3a7bc8 100%);
-            color: #fff;
-            width: 100%;
-        }
-
-        .btn-flip:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(74, 144, 217, 0.4);
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 6px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 3px;
-            margin-bottom: 20px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #4a90d9, #44d944);
-            border-radius: 3px;
-            transition: width 0.3s;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #888;
-        }
-
-        .empty-state h2 {
-            color: #44d944;
-            margin-bottom: 10px;
-        }
-
-        .session-complete {
-            text-align: center;
-            padding: 40px;
-        }
-
-        .session-complete h2 {
-            color: #44d944;
-            font-size: 1.5rem;
-            margin-bottom: 15px;
-        }
-
-        .session-stats {
-            margin: 20px 0;
-        }
-
-        .session-stats div {
-            margin: 10px 0;
-            font-size: 1.1rem;
-        }
-
-        .btn-restart {
-            background: linear-gradient(145deg, #4a90d9 0%, #3a7bc8 100%);
-            color: #fff;
-            margin-top: 20px;
-        }
-
-        .mode-toggle {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
+        .btn-again { background: linear-gradient(145deg, #d94444 0%, #b33636 100%); color: #fff; }
+        .btn-again:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(217, 68, 68, 0.4); }
+        .btn-good { background: linear-gradient(145deg, #44d944 0%, #36b336 100%); color: #fff; }
+        .btn-good:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(68, 217, 68, 0.4); }
+        .btn-flip { background: linear-gradient(145deg, #4a90d9 0%, #3a7bc8 100%); color: #fff; width: 100%; }
+        .btn-flip:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(74, 144, 217, 0.4); }
+        .progress-bar { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; margin-bottom: 20px; overflow: hidden; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #4a90d9, #44d944); border-radius: 3px; transition: width 0.3s; }
+        .empty-state { text-align: center; padding: 60px 20px; color: #888; }
+        .empty-state h2 { color: #44d944; margin-bottom: 10px; }
+        .session-complete { text-align: center; padding: 40px; }
+        .session-complete h2 { color: #44d944; font-size: 1.5rem; margin-bottom: 15px; }
+        .btn-restart { background: linear-gradient(145deg, #4a90d9 0%, #3a7bc8 100%); color: #fff; margin-top: 20px; }
+        .mode-toggle { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; }
         .mode-btn {
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
-            color: #e0e0e0;
-            padding: 10px 20px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: all 0.2s;
+            background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+            color: #e0e0e0; padding: 10px 20px; border-radius: 10px;
+            cursor: pointer; font-size: 0.9rem; transition: all 0.2s;
         }
-
-        .mode-btn.active {
-            background: #4a90d9;
-            border-color: #4a90d9;
-        }
-
+        .mode-btn.active { background: #4a90d9; border-color: #4a90d9; }
         @media (max-width: 500px) {
-            .card {
-                min-height: 250px;
-            }
-
-            .card-content {
-                font-size: 1rem;
-            }
-
-            .controls {
-                flex-direction: column;
-            }
-
-            .btn {
-                width: 100%;
-            }
+            .card { min-height: 280px; }
+            .card-content { font-size: 1rem; }
+            .person-photo { width: 140px; height: 140px; }
+            .controls { flex-direction: column; }
+            .btn { width: 100%; }
         }
     </style>
 </head>
@@ -322,35 +96,28 @@
     <div class="container">
         <header>
             <h1>Pennington Flashcards</h1>
-            <a href="people.html" class="nav-link">Learn People's Faces</a>
             <div class="stats">
                 <span id="mastered">Mastered: 0</span>
                 <span id="learning">Learning: 0</span>
                 <span id="total">Total: 0</span>
             </div>
         </header>
-
-        <div class="progress-bar">
-            <div class="progress-fill" id="progress"></div>
-        </div>
-
+        <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
         <div class="mode-toggle">
             <button class="mode-btn active" data-mode="due">Due Cards</button>
             <button class="mode-btn" data-mode="all">All Cards</button>
             <button class="mode-btn" data-mode="shuffle">Shuffle All</button>
         </div>
-
         <div class="category-filter" id="categories"></div>
-
         <div id="card-area"></div>
     </div>
-
     <script>
-        // Flashcard data
         const flashcards = [
+            // Company Basics
             { id: 1, category: "Company Basics", front: "What is Pennington's AUM?", back: "~$4 billion ($3.95B as of Dec 2024)" },
             { id: 2, category: "Company Basics", front: "What is Pennington's internal valuation and EBITDA?", back: "$60M valuation, $3-4M EBITDA" },
             { id: 3, category: "Company Basics", front: "What systems does Pennington use?", back: "QuickBooks (accounting), Addepar (client portfolio reporting). Sage Intacct migration planned but not started." },
+            // Funds
             { id: 4, category: "Funds", front: "What funds does Pennington manage?", back: "10 private funds:\n1. Pennington Alternative Income IDF, LP\n2. PTM Partners Opportunity Zone Fund 1, LP\n3. Pennington Real Estate Partners OZF, LP\n4. Pennington Appreciation Fund, LP\n5. Pennington Alternative Income Fund, LP\n6. Pennington Alternative Income Access, LP\n7. PTM Partners Opportunity Zone Fund III, LP\n8. Pennington Private Access, LP\n9. Atomizer LXIV (series of Atomizer LLC)\n10. Pennington Liquidity Fund, LP" },
             { id: 5, category: "Funds", front: "Pennington Alternative Income IDF, LP - Key Facts?", back: "- AUM: $87,391,009\n- Investors: 1\n- Administrator: JTC Group\n- Custodian: Charles Schwab & Co., Inc." },
             { id: 6, category: "Funds", front: "PTM Partners Opportunity Zone Fund 1, LP - Key Facts?", back: "- AUM: $80,249,840\n- Investors: 88\n- Administrator: Juniper Square\n- Custodian: Charles Schwab & Co. Inc. / National City Bank" },
@@ -362,36 +129,79 @@
             { id: 12, category: "Funds", front: "Pennington Private Access, LP - Key Facts?", back: "- AUM: $7,426,876\n- Investors: 17\n- Administrator: Aduro Advisors, LLC\n- Custodians: Avidbank, JPMorgan Chase" },
             { id: 13, category: "Funds", front: "Atomizer LXIV, A Series of Atomizer LLC - Key Facts?", back: "- AUM: $4,352,065\n- Investors: 33\n- Administrator: Allocations\n- Custodian: Evolve Bank & Trust" },
             { id: 14, category: "Funds", front: "Pennington Liquidity Fund, LP - Key Facts?", back: "- AUM: $1,030,293\n- Investors: 11\n- Administrator: JTC Group\n- Custodian: Charles Schwab & Co., Inc." },
+            // Carnegie
             { id: 15, category: "Carnegie", front: "Carnegie: 3 Fundamental Techniques in Handling People?", back: "1. Don't criticize, condemn, or complain\n2. Give honest and sincere appreciation\n3. Arouse in the other person an eager want" },
             { id: 16, category: "Carnegie", front: "Carnegie: 6 Ways to Make People Like You?", back: "1. Become genuinely interested in other people\n2. Smile\n3. Remember their name\n4. Be a good listener - encourage them to talk about themselves\n5. Talk in terms of their interests\n6. Make them feel important - sincerely" },
             { id: 17, category: "Carnegie", front: "Carnegie: How to change people without giving offense?", back: "1. Begin with praise\n2. Call attention to mistakes indirectly\n3. Talk about your own mistakes first\n4. Ask questions instead of giving orders\n5. Let the other person save face\n6. Praise every improvement\n7. Give them a reputation to live up to\n8. Make faults seem easy to correct" },
             { id: 18, category: "Carnegie", front: "Carnegie: Why can't you win an argument?", back: "Even if you \"win\" logically, you lose the relationship. The other person feels resentful and won't support you. Better to avoid arguments entirely - show respect for their opinion, admit when you're wrong, and find common ground." },
             { id: 19, category: "Carnegie", front: "How to apply Carnegie with Brian?", back: "- Frame requests in terms of what HE wants (decisions, not data)\n- Let him feel ownership of ideas\n- Admit mistakes quickly and emphatically\n- Give sincere appreciation for his guidance\n- Don't argue - ask questions instead" },
+            // Slootman
             { id: 20, category: "Slootman", front: "Slootman (Amp It Up): What are the 4 core principles?", back: "1. Raise your standards - don't accept mediocrity\n2. Increase tempo - speed is a competitive advantage\n3. Sharpen focus - fewer priorities, executed with intensity\n4. Be a DRIVER not a PASSENGER - own outcomes" },
             { id: 21, category: "Slootman", front: "Slootman: Driver vs. Passenger mindset?", back: "Drivers: Own outcomes, ask \"what can I do?\", move the ball forward, take initiative\n\nPassengers: Observe, ask \"what should someone do?\", wait to be told, spectate\n\nAmy and John were passengers. Be a driver." },
             { id: 22, category: "Slootman", front: "Slootman: What does \"declare bankruptcy\" mean?", back: "Kill legacy approaches that aren't working. Don't polish a turd - start fresh. Sunk cost fallacy kills progress. If a system is broken (e.g., QuickBooks processes), redesign from scratch rather than patching." },
             { id: 23, category: "Slootman", front: "Slootman: Why tempo matters?", back: "- What takes a month should take a week\n- What takes a week should take a day\n- Urgency is a cultural attribute, not a response to crisis\n- Speed compounds - faster cycles = more learning = better outcomes" },
             { id: 24, category: "Slootman", front: "How to apply Slootman at Pennington?", back: "- Match or exceed Brian's operating tempo\n- Pick 2-3 priorities (ERP, PnL by People, close process) - not 10\n- Own problems end-to-end without being asked\n- Don't over-study Sage Intacct migration - execute\n- Raise the bar on finance team output" },
+            // Gawande
             { id: 25, category: "Gawande", front: "Gawande (Checklist Manifesto): Why do checklists work?", back: "- Complexity exceeds human memory and attention\n- Errors happen from ineptitude (failing to apply what we know), not ignorance\n- Checklists catch \"dumb\" mistakes that derail important work\n- They externalize working memory" },
             { id: 26, category: "Gawande", front: "Gawande: Two types of checklists?", back: "1. DO-CONFIRM: Work from memory, then pause and verify all steps were done\n\n2. READ-DO: Read each item, then do it step-by-step (for high-stakes processes)" },
             { id: 27, category: "Gawande", front: "Gawande: Rules for good checklist design?", back: "1. Short: 5-9 items max\n2. Focus on \"killer items\" - steps most likely to be skipped but critical\n3. Precise, efficient wording\n4. Practical in real conditions\n5. Define the \"pause point\" - when to use it\n6. Test and iterate after errors" },
             { id: 28, category: "Gawande", front: "How to apply Gawande at Pennington?", back: "- Build checklists for: close, billing, capital calls, reporting, onboarding\n- John's capital call error = checklist would have caught it\n- Checklists = trust with Brian (he doesn't have to check your work)\n- After every error, update the checklist\n- Checklists are professional, not weakness" },
-            { id: 29, category: "Integration", front: "How do Carnegie, Slootman, and Gawande work together?", back: "Making a mistake:\n- Carnegie: Admit quickly\n- Slootman: Fix fast, raise bar\n- Gawande: Update checklist\n\nProposing change:\n- Carnegie: Let them own it\n- Slootman: Execute, don't over-study\n- Gawande: Checklist implementation\n\nManaging up:\n- Carnegie: Frame in Brian's interests\n- Slootman: Match his tempo\n- Gawande: Error-free builds trust" },
-            { id: 30, category: "Integration", front: "Daily reflection questions from the books?", back: "Morning:\n- What are my 2-3 priorities? (Slootman)\n- Who do I need to build relationship with? (Carnegie)\n- What could go wrong that a checklist would catch? (Gawande)\n- How am I building my power base? (Pfeffer)\n\nEvening:\n- Did I operate with urgency? (Slootman)\n- Did I give sincere appreciation? (Carnegie)\n- What process broke that needs a checklist? (Gawande)\n- Did I increase my visibility? (Pfeffer)" },
-            { id: 31, category: "Integration", front: "What killed John at Pennington? (through the lens of the 4 books)", back: "- Carnegie: Didn't own his mistake (\"I've been meaning to get to that\")\n- Slootman: Passenger mindset, low tempo, tolerated mediocrity\n- Gawande: No checklist caught the capital call error\n- Pfeffer: No credibility, no power base, easily replaceable\n\nThe fix: Admit mistakes fast (Carnegie), operate with urgency (Slootman), build checklists (Gawande), make yourself indispensable (Pfeffer)." },
+            // Pfeffer
             { id: 32, category: "Pfeffer", front: "Pfeffer (Power): The uncomfortable truth about success?", back: "- Performance alone doesn't guarantee success\n- The world is not just - good work often goes unrewarded\n- Power is a skill that can be learned, not an innate trait\n- You need both the WILL to acquire power and the SKILL to get it" },
             { id: 33, category: "Pfeffer", front: "Pfeffer: 7 personal qualities that build power?", back: "1. Ambition - wanting influence\n2. Energy - high activity, stamina\n3. Focus - concentrated effort\n4. Self-knowledge - know your strengths/weaknesses\n5. Confidence - project certainty\n6. Empathy - read others\n7. Capacity for conflict - willingness to fight" },
             { id: 34, category: "Pfeffer", front: "Pfeffer: 5 structural sources of power?", back: "1. Control of resources - budget, headcount, information\n2. Formal authority - title and position\n3. Structural position - where you sit in the network\n4. Scarcity - skills others can't easily replace\n5. Visibility - being known by decision-makers" },
             { id: 35, category: "Pfeffer", front: "Pfeffer: Key tactics for building power?", back: "1. Get in the room - be where decisions happen\n2. Speak with power - fewer hedges, declarative statements\n3. Act with power - body language, eye contact\n4. Build your brand - be known for something valuable\n5. Network strategically - cultivate powerful relationships\n6. Ask for what you want - directly and repeatedly\n7. Create resources - make yourself indispensable" },
-            { id: 36, category: "Pfeffer", front: "Pfeffer: What are the prices of power?", back: "- Visibility means scrutiny\n- Success creates enemies\n- Time and energy costs\n- Potential compromises to values\n- Relationships become more transactional\n\nPower has costs - decide if you're willing to pay them." },
-            { id: 37, category: "Pfeffer", front: "How to apply Pfeffer at Pennington?", back: "- Control resources: Own financial data and analysis leadership needs\n- Get visible: Position yourself in strategy discussions, not just operations\n- Build network: Relationships beyond finance (Taylor/Alex, Guy, client teams)\n- Ask directly: Be explicit about CFO path - don't wait to be offered\n- Early wins: Fix something visible in first 30 days\n- Create scarcity: Become the only one who sees the full financial picture" },
-            { id: 38, category: "Pfeffer", front: "Carnegie vs. Pfeffer - how to resolve the tension?", back: "Carnegie says: Be likable, let others feel ownership, avoid conflict\n\nPfeffer says: Advocate for yourself, be visible, fight when necessary\n\nResolution:\n- Carnegie for daily interactions and relationship building\n- Pfeffer for career strategy and positioning\n- Carnegie: How to behave in meetings\n- Pfeffer: How to decide which meetings to be in" },
-            { id: 39, category: "Pfeffer", front: "What are your power sources to build at Pennington?", back: "1. Financial information - create dependency on your analysis\n2. Decision-ready recommendations - what Brian wants\n3. Process reliability - trust\n4. Cross-entity visibility - no one else has full picture\n5. ERP migration leadership - technical scarcity\n\nPower gaps to address: New to org, predecessors failed (credibility deficit), finance seen as back-office, no ownership stake yet." },
-            { id: 40, category: "Pfeffer", front: "Daily/weekly power questions (Pfeffer)?", back: "Daily:\n- How am I building my power base today?\n- Did I speak with power or hedge?\n- Did I increase my visibility?\n\nWeekly:\n- Who are the powerful people I should be building relationships with?\n- Am I asking for what I want or waiting to be offered?\n- What resource do I control that others depend on?" }
+            { id: 36, category: "Pfeffer", front: "How to apply Pfeffer at Pennington?", back: "- Control resources: Own financial data and analysis leadership needs\n- Get visible: Position yourself in strategy discussions, not just operations\n- Build network: Relationships beyond finance (Taylor/Alex, Guy, client teams)\n- Ask directly: Be explicit about CFO path - don't wait to be offered\n- Early wins: Fix something visible in first 30 days\n- Create scarcity: Become the only one who sees the full financial picture" },
+            { id: 37, category: "Pfeffer", front: "Carnegie vs. Pfeffer - how to resolve the tension?", back: "Carnegie says: Be likable, let others feel ownership, avoid conflict\n\nPfeffer says: Advocate for yourself, be visible, fight when necessary\n\nResolution:\n- Carnegie for daily interactions and relationship building\n- Pfeffer for career strategy and positioning\n- Carnegie: How to behave in meetings\n- Pfeffer: How to decide which meetings to be in" },
+            // Integration
+            { id: 29, category: "Integration", front: "How do Carnegie, Slootman, and Gawande work together?", back: "Making a mistake:\n- Carnegie: Admit quickly\n- Slootman: Fix fast, raise bar\n- Gawande: Update checklist\n\nProposing change:\n- Carnegie: Let them own it\n- Slootman: Execute, don't over-study\n- Gawande: Checklist implementation\n\nManaging up:\n- Carnegie: Frame in Brian's interests\n- Slootman: Match his tempo\n- Gawande: Error-free builds trust" },
+            { id: 30, category: "Integration", front: "Daily reflection questions from the books?", back: "Morning:\n- What are my 2-3 priorities? (Slootman)\n- Who do I need to build relationship with? (Carnegie)\n- What could go wrong that a checklist would catch? (Gawande)\n- How am I building my power base? (Pfeffer)\n\nEvening:\n- Did I operate with urgency? (Slootman)\n- Did I give sincere appreciation? (Carnegie)\n- What process broke that needs a checklist? (Gawande)\n- Did I increase my visibility? (Pfeffer)" },
+            { id: 31, category: "Integration", front: "What killed John at Pennington? (through the lens of the 4 books)", back: "- Carnegie: Didn't own his mistake (\"I've been meaning to get to that\")\n- Slootman: Passenger mindset, low tempo, tolerated mediocrity\n- Gawande: No checklist caught the capital call error\n- Pfeffer: No credibility, no power base, easily replaceable\n\nThe fix: Admit mistakes fast (Carnegie), operate with urgency (Slootman), build checklists (Gawande), make yourself indispensable (Pfeffer)." },
+            // People
+            { id: 101, category: "People", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/80bf71a3-7677-4e91-9b95-2e374208e944/f_220042_110016_8x10.jpg", back: "Brian Gaister\nCo-Founder, CEO" },
+            { id: 102, category: "People", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/1633905262294-O1KLD0YCSKDLFWNF9YJ9/Rodd%2BMacklin.jpg", back: "Rodd Macklin\nCo-Founder, Senior Managing Director" },
+            { id: 103, category: "People", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/1638898224652-QHE08BDVK9JS4ACLG7T0/Kent%2BAndrews_8x10.jpg", back: "Kent Andrews\nPartner, Investments" },
+            { id: 104, category: "People", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/1e0953ea-ad53-43c4-bb4a-535f500e03ec/DSC_7717rev1.jpg", back: "Jill Sheppard Davenport\nPartner, Director of Health and Wellness" },
+            { id: 105, category: "People", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/356377f1-e97e-415a-8083-6aa713015138/Rubenstein_0946_4x6print_bw.jpg", back: "Michael Rubenstein\nPartner, Director of Income & Estate Tax Minimization" },
+            { id: 106, category: "People", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/6f7020f3-2239-48e8-b59d-b6dc67bbd552/k.png", back: "Keith Kellum\nPartner & Portfolio Manager" },
+            { id: 107, category: "People", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/41c930fe-f726-43de-a6d3-2588303a6033/M.png", back: "Marilyn Santiago\nPartner & Head of Relationship Management" },
+            { id: 108, category: "People", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/fcea32f1-e26a-4e68-8e1e-417906604149/Wendy+Xu+-+Headshot.jpg", back: "Wendy Xu\nManaging Director, Private Markets" },
+            { id: 109, category: "People", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/da1de05b-5b0a-4dbc-9d9b-97e8c3f058d0/Taylor.jpg", back: "Taylor Coe\nManaging Director, Pennington Real Estate Partners" },
+            { id: 110, category: "People", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/00b21095-1596-433f-a61f-5c7b837befcc/Alex.jpg", back: "Alex Rongione\nManaging Director, Pennington Real Estate Partners" },
+            { id: 111, category: "People", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/54fc879a-6a96-4745-93c4-67862ecc1409/Sheain_1002_4x4print_Square_BW.jpg", back: "Trey Sheain\nPortfolio Manager, CFA" },
+            { id: 112, category: "People", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/bd070fda-8e31-4d71-886f-3be6750d75dd/Matt+Devine+-+headshot.jpg", back: "Matthew Devine\nPortfolio Manager, CFA" },
+            { id: 113, category: "People", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/d2575a2a-a844-4821-8ec3-7e2b2146fd30/Will+Lowrie-modified.jpg", back: "William Lowrie\nPortfolio Manager, CFA" },
+            { id: 114, category: "People", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/1634746751089-OFA1WQ0V8342Z05072ZN/Megan%2BBleil_new%2BBIG%2BFILE.jpg", back: "Megan Bleil\nPartner, Family Office Advisor" },
+            { id: 115, category: "People", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/c7e6d5b7-07e7-41b3-96e1-6f34b4048f3d/Will+Helkart+Headshot.png", back: "Will Halkyard\nClient Relationship Officer" },
+            { id: 116, category: "People", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/d0e3f38e-ca96-4e1d-8aba-5b1d2e631404/f_240046_110051.jpg", back: "Olimpia Sulla\nDirector, Wealth Strategy & Estate Planning" },
+            { id: 117, category: "People", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/425098c5-315c-4293-bc7e-665d91e039c4/Graf%2C+Megan3656-headshot-full_frame-hires_bw+%282%29+%281%29.jpg", back: "Megan Graf\nSenior Operations Advisor" },
+            { id: 118, category: "People", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/eb81bebd-2f56-4ec2-8863-8036e125b21e/u_210122_110082+Pennington.jpg", back: "Guy Scott\nChief Compliance Officer" },
+            { id: 119, category: "People", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/77751dea-4029-4697-a8a4-60595c01cbfe/Screenshot+2025-06-18+152237.png", back: "David Bell\nSenior Legal Advisor" },
+            { id: 120, category: "People", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/00e05149-7353-493a-8dc7-a2c7d8507e35/Chad+Lilly+-+Headshot.jpg", back: "Chad Lilly\nVice President, Head of Talent Acquisition" },
+            { id: 121, category: "People", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/17eda384-47c9-447d-857c-5144100e6d60/Rizas_Headshot.jpg", back: "John Rizas\nDirector of Finance" },
+            { id: 122, category: "People", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/f801e0d7-12ee-47c0-8d93-732daede3e4f/Nadia+headshot.jpg", back: "Nadia Khan\nSenior Staff Accountant" },
+            { id: 123, category: "People", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/24417788-c8df-434f-8701-0af8526d462e/Jacob+Reinhardt+Headshot.png", back: "Jacob Reinhardt\nInvestment Analyst" },
+            { id: 124, category: "People", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/649d0be1-5e49-4c72-89ea-26067215964b/Longhe+Cao+Headshot.png", back: "Longhe Cao\nInvestment Analyst" },
+            { id: 125, category: "People", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/683f4d8f-5eeb-4794-a779-bcafccc333b1/unnamed.png", back: "Nicole Clark-Ramirez\nHealth & Wellness Specialist" },
+            { id: 126, category: "People", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/6faa2093-a1df-481b-9eb6-1b043b36058c/Jamie+McLaughlin.jpg", back: "Jamie McLaughlin\nSenior Advisor" },
+            { id: 127, category: "People", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/14fbbdfd-ffa5-40d7-a66e-c9862839ad3c/strassler.jpg", back: "Philip Strassler\nSenior Advisor, CPA" },
+            { id: 128, category: "People", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/1636058549216-VID20KECP4LX4XJWSHZ3/RPS_Pic.jpg", back: "Roger Staiger\nSenior Real Estate Advisor" },
+            { id: 129, category: "People", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/d4ac55c8-6103-486f-ba01-7cf4f65b2577/Screenshot+2025-06-03+102915.png", back: "Tommy Wright\nSenior Advisor" },
+            { id: 130, category: "People", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/09fc5595-fd9e-422d-ad9d-d867e5bfe677/Sehkar+Headshot.png", back: "Sehkar Puli\nSenior Advisor" },
+            { id: 131, category: "People", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/9cfa91b6-a509-4399-be7d-6abef54c7906/Barak+Headshot.png", back: "Barak Kaufman\nSenior Advisor" },
+            { id: 132, category: "People", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/e251c428-516a-43e2-b724-f9b84a7536dd/Daivd+Homan+.png", back: "David Homan\nSenior Advisor" },
+            { id: 133, category: "People", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/2aa6e7fd-144c-4214-a515-5aaada91233f/Eric+Rosen.jpg", back: "Eric Rosen\nSenior Advisor" },
+            { id: 134, category: "People", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/1dfc7bd5-736d-4ffd-b780-27603f90db45/Daniel+Erem.png", back: "Daniel Erem\nSenior Advisor" },
+            { id: 135, category: "People", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/3823009c-4fcf-487d-b650-9bebf7fea6ce/Tod%252BTrabocco.jpeg", back: "Tod Trabocco\nSenior Advisor" },
+            { id: 136, category: "People", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/c5d81661-1e28-478f-a403-1e62d378698f/Lauren+Headshot.png", back: "Lauren Lennahan\nMarketing Manager" },
+            { id: 137, category: "People", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/79372e0b-0b51-4b14-9bd3-5a79daefea3a/Jake+Brophy.jpg", back: "Jake Brophy\nSenior Associate, Operations" },
+            { id: 138, category: "People", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/4a08994c-f565-47c9-8511-6821fe168302/Odessa+Clear+Headshot.png", back: "Odessa Clear\nOperations Associate" },
+            { id: 139, category: "People", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/be9327ff-fe67-4cda-abc9-dfddcf48d9bb/Hannah+Aurich.jpg", back: "Hannah Aurich\nClient Relationship Officer" },
+            { id: 140, category: "People", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/3c2209f3-824b-4fb9-a81e-4ccbe1528808/Screenshot+2025-12-30+124810.png", back: "Ben Pieroni\nClient Relationship Officer" },
+            { id: 141, category: "People", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/943dbabd-dc6d-455d-8349-0fdc3db5c40e/Bates_2356_500x500px_72dpi_Square.jpg", back: "Courtney Bates\nExecutive Assistant" }
         ];
 
-        // State
-        let cardProgress = JSON.parse(localStorage.getItem('pennington-flashcards') || '{}');
+        let cardProgress = JSON.parse(localStorage.getItem('pennington-flashcards-v2') || '{}');
         let currentMode = 'due';
         let currentCategory = 'all';
         let currentDeck = [];
@@ -399,22 +209,15 @@
         let isFlipped = false;
         let sessionStats = { correct: 0, incorrect: 0 };
 
-        // Get unique categories
         const categories = ['all', ...new Set(flashcards.map(c => c.category))];
 
-        // Initialize card progress
         flashcards.forEach(card => {
             if (!cardProgress[card.id]) {
-                cardProgress[card.id] = {
-                    level: 0, // 0 = new, 1-4 = learning, 5 = mastered
-                    nextReview: Date.now(),
-                    lastReview: null
-                };
+                cardProgress[card.id] = { level: 0, nextReview: Date.now(), lastReview: null };
             }
         });
         saveProgress();
 
-        // DOM elements
         const cardArea = document.getElementById('card-area');
         const categoriesEl = document.getElementById('categories');
         const progressEl = document.getElementById('progress');
@@ -422,14 +225,10 @@
         const learningEl = document.getElementById('learning');
         const totalEl = document.getElementById('total');
 
-        // Render categories
         function renderCategories() {
             categoriesEl.innerHTML = categories.map(cat =>
-                `<button class="category-btn ${currentCategory === cat ? 'active' : ''}" data-category="${cat}">
-                    ${cat === 'all' ? 'All' : cat}
-                </button>`
+                `<button class="category-btn ${currentCategory === cat ? 'active' : ''}" data-category="${cat}">${cat === 'all' ? 'All' : cat}</button>`
             ).join('');
-
             categoriesEl.querySelectorAll('.category-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     currentCategory = btn.dataset.category;
@@ -440,7 +239,6 @@
             });
         }
 
-        // Mode toggle
         document.querySelectorAll('.mode-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
@@ -451,16 +249,9 @@
             });
         });
 
-        // Build deck based on mode and category
         function buildDeck() {
             let cards = flashcards;
-
-            // Filter by category
-            if (currentCategory !== 'all') {
-                cards = cards.filter(c => c.category === currentCategory);
-            }
-
-            // Filter/sort by mode
+            if (currentCategory !== 'all') cards = cards.filter(c => c.category === currentCategory);
             if (currentMode === 'due') {
                 const now = Date.now();
                 cards = cards.filter(c => cardProgress[c.id].nextReview <= now || cardProgress[c.id].level === 0);
@@ -468,144 +259,108 @@
             } else if (currentMode === 'shuffle') {
                 cards = [...cards].sort(() => Math.random() - 0.5);
             }
-
             currentDeck = cards;
             currentIndex = 0;
             isFlipped = false;
             sessionStats = { correct: 0, incorrect: 0 };
         }
 
-        // Calculate next review time based on level
         function getNextReview(level) {
-            const intervals = [
-                0,           // Level 0: immediate
-                1 * 60000,   // Level 1: 1 minute
-                10 * 60000,  // Level 2: 10 minutes
-                60 * 60000,  // Level 3: 1 hour
-                24 * 3600000, // Level 4: 1 day
-                7 * 24 * 3600000 // Level 5: 1 week (mastered)
-            ];
+            const intervals = [0, 60000, 600000, 3600000, 86400000, 604800000];
             return Date.now() + (intervals[level] || intervals[5]);
         }
 
-        // Save progress
         function saveProgress() {
-            localStorage.setItem('pennington-flashcards', JSON.stringify(cardProgress));
+            localStorage.setItem('pennington-flashcards-v2', JSON.stringify(cardProgress));
         }
 
-        // Update stats display
         function updateStats() {
             const mastered = flashcards.filter(c => cardProgress[c.id].level >= 5).length;
             const learning = flashcards.filter(c => cardProgress[c.id].level > 0 && cardProgress[c.id].level < 5).length;
-
             masteredEl.textContent = `Mastered: ${mastered}`;
             learningEl.textContent = `Learning: ${learning}`;
             totalEl.textContent = `Total: ${flashcards.length}`;
-
-            const progress = (mastered / flashcards.length) * 100;
-            progressEl.style.width = `${progress}%`;
+            progressEl.style.width = `${(mastered / flashcards.length) * 100}%`;
         }
 
-        // Format text with line breaks
         function formatText(text) {
-            return text
-                .replace(/\n/g, '<br>')
-                .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+            return text.replace(/\n/g, '<br>').replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
         }
 
-        // Render current card
         function renderCard() {
             updateStats();
-
             if (currentDeck.length === 0 || currentIndex >= currentDeck.length) {
                 if (currentMode === 'due' && currentDeck.length === 0) {
-                    cardArea.innerHTML = `
-                        <div class="empty-state">
-                            <h2>All caught up!</h2>
-                            <p>No cards due for review. Try "All Cards" or "Shuffle All" mode to keep practicing.</p>
-                        </div>
-                    `;
+                    cardArea.innerHTML = `<div class="empty-state"><h2>All caught up!</h2><p>No cards due for review.</p></div>`;
                 } else {
-                    cardArea.innerHTML = `
-                        <div class="session-complete">
-                            <h2>Session Complete!</h2>
-                            <div class="session-stats">
-                                <div>Correct: ${sessionStats.correct}</div>
-                                <div>Needs Review: ${sessionStats.incorrect}</div>
-                            </div>
-                            <button class="btn btn-restart" onclick="restartSession()">Start New Session</button>
-                        </div>
-                    `;
+                    cardArea.innerHTML = `<div class="session-complete"><h2>Session Complete!</h2><p>Correct: ${sessionStats.correct} | Review: ${sessionStats.incorrect}</p><button class="btn btn-restart" onclick="restartSession()">New Session</button></div>`;
                 }
                 return;
             }
-
             const card = currentDeck[currentIndex];
-            const progress = cardProgress[card.id];
+            const isPerson = !!card.photo;
 
-            cardArea.innerHTML = `
-                <div class="card-container">
-                    <div class="card ${isFlipped ? 'flipped' : ''}" onclick="flipCard()">
-                        <div class="card-face card-front">
-                            <div class="card-category">${card.category}</div>
-                            <div class="card-label">Question ${currentIndex + 1} of ${currentDeck.length}</div>
-                            <div class="card-content">${formatText(card.front)}</div>
-                            <div class="card-hint">Tap to reveal answer</div>
-                        </div>
-                        <div class="card-face card-back">
-                            <div class="card-category">${card.category}</div>
-                            <div class="card-label">Answer</div>
-                            <div class="card-content">${formatText(card.back)}</div>
+            if (isPerson) {
+                const [name, title] = card.back.split('\n');
+                cardArea.innerHTML = `
+                    <div class="card-container">
+                        <div class="card ${isFlipped ? 'flipped' : ''}" onclick="flipCard()">
+                            <div class="card-face card-front">
+                                <div class="card-category">${card.category}</div>
+                                <img src="${card.photo}" class="person-photo" onerror="this.style.display='none'">
+                                <div class="card-hint">Who is this?</div>
+                            </div>
+                            <div class="card-face card-back">
+                                <div class="card-category">${card.category}</div>
+                                <img src="${card.photo}" class="person-photo" onerror="this.style.display='none'">
+                                <div class="person-name">${name}</div>
+                                <div class="person-title">${title || ''}</div>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="controls">
-                    ${isFlipped ? `
-                        <button class="btn btn-again" onclick="markCard(false)">Again</button>
-                        <button class="btn btn-good" onclick="markCard(true)">Got it</button>
-                    ` : `
-                        <button class="btn btn-flip" onclick="flipCard()">Show Answer</button>
-                    `}
-                </div>
-            `;
+                    <div class="controls">
+                        ${isFlipped ? `<button class="btn btn-again" onclick="markCard(false)">Again</button><button class="btn btn-good" onclick="markCard(true)">Got it</button>` : `<button class="btn btn-flip" onclick="flipCard()">Reveal</button>`}
+                    </div>`;
+            } else {
+                cardArea.innerHTML = `
+                    <div class="card-container">
+                        <div class="card ${isFlipped ? 'flipped' : ''}" onclick="flipCard()">
+                            <div class="card-face card-front">
+                                <div class="card-category">${card.category}</div>
+                                <div class="card-label">Question ${currentIndex + 1} of ${currentDeck.length}</div>
+                                <div class="card-content">${formatText(card.front)}</div>
+                                <div class="card-hint">Tap to reveal</div>
+                            </div>
+                            <div class="card-face card-back">
+                                <div class="card-category">${card.category}</div>
+                                <div class="card-label">Answer</div>
+                                <div class="card-content">${formatText(card.back)}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="controls">
+                        ${isFlipped ? `<button class="btn btn-again" onclick="markCard(false)">Again</button><button class="btn btn-good" onclick="markCard(true)">Got it</button>` : `<button class="btn btn-flip" onclick="flipCard()">Show Answer</button>`}
+                    </div>`;
+            }
         }
 
-        // Flip card
-        function flipCard() {
-            isFlipped = !isFlipped;
-            renderCard();
-        }
+        function flipCard() { isFlipped = !isFlipped; renderCard(); }
 
-        // Mark card
         function markCard(correct) {
             const card = currentDeck[currentIndex];
             const progress = cardProgress[card.id];
-
-            if (correct) {
-                progress.level = Math.min(5, progress.level + 1);
-                sessionStats.correct++;
-            } else {
-                progress.level = Math.max(0, progress.level - 1);
-                sessionStats.incorrect++;
-            }
-
+            if (correct) { progress.level = Math.min(5, progress.level + 1); sessionStats.correct++; }
+            else { progress.level = Math.max(0, progress.level - 1); sessionStats.incorrect++; }
             progress.nextReview = getNextReview(progress.level);
             progress.lastReview = Date.now();
-
             saveProgress();
-
             currentIndex++;
             isFlipped = false;
             renderCard();
         }
 
-        // Restart session
-        function restartSession() {
-            buildDeck();
-            renderCard();
-        }
+        function restartSession() { buildDeck(); renderCard(); }
 
-        // Initialize
         renderCategories();
         buildDeck();
         renderCard();
