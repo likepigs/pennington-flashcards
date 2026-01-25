@@ -16,6 +16,14 @@
         .container { max-width: 700px; margin: 0 auto; }
         header { text-align: center; margin-bottom: 30px; }
         h1 { font-size: 1.8rem; margin-bottom: 10px; color: #fff; }
+        .sync-info { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px; }
+        .sync-code-display { background: rgba(255,255,255,0.1); padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; color: #888; }
+        .btn-change-code { background: none; border: none; color: #4a90d9; cursor: pointer; font-size: 0.8rem; text-decoration: underline; }
+        .btn-change-code:hover { color: #6ab0f9; }
+        .sync-status { font-size: 0.75rem; color: #888; margin-bottom: 10px; }
+        .sync-status.synced { color: #44d944; }
+        .sync-status.syncing { color: #d9a344; }
+        .sync-status.offline { color: #d94444; }
         .stats {
             display: flex; justify-content: center; gap: 20px;
             font-size: 0.9rem; color: #888;
@@ -83,6 +91,25 @@
             cursor: pointer; font-size: 0.9rem; transition: all 0.2s;
         }
         .mode-btn.active { background: #4a90d9; border-color: #4a90d9; }
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8); display: flex;
+            align-items: center; justify-content: center; z-index: 1000;
+        }
+        .modal {
+            background: linear-gradient(145deg, #2a2a4a 0%, #1e1e3a 100%);
+            border-radius: 16px; padding: 40px; max-width: 400px; width: 90%; text-align: center;
+        }
+        .modal h2 { margin-bottom: 15px; color: #fff; }
+        .modal p { color: #888; margin-bottom: 25px; font-size: 0.9rem; line-height: 1.5; }
+        .modal input {
+            width: 100%; padding: 15px; border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 10px; background: rgba(255,255,255,0.1); color: #fff;
+            font-size: 1rem; margin-bottom: 20px; text-align: center;
+        }
+        .modal input:focus { outline: none; border-color: #4a90d9; }
+        .modal input::placeholder { color: #666; }
+        .modal .btn { width: 100%; }
         @media (max-width: 500px) {
             .card { min-height: 280px; }
             .card-content { font-size: 1rem; }
@@ -96,6 +123,11 @@
     <div class="container">
         <header>
             <h1>Pennington Flashcards</h1>
+            <div class="sync-info">
+                <span class="sync-code-display" id="sync-code-display"></span>
+                <button class="btn-change-code" onclick="showSyncModal()">Change</button>
+            </div>
+            <div class="sync-status" id="sync-status">Connecting...</div>
             <div class="stats">
                 <span id="mastered">Mastered: 0</span>
                 <span id="learning">Learning: 0</span>
@@ -111,7 +143,41 @@
         <div class="category-filter" id="categories"></div>
         <div id="card-area"></div>
     </div>
-    <script>
+
+    <!-- Sync Code Modal -->
+    <div class="modal-overlay" id="sync-modal" style="display: none;">
+        <div class="modal">
+            <h2>Enter Sync Code</h2>
+            <p>Use the same code on all your devices to keep your progress in sync. Pick something memorable but unique to you.</p>
+            <input type="text" id="sync-code-input" placeholder="e.g., derek-pennington-2025" autocomplete="off" autocapitalize="off">
+            <button class="btn btn-flip" onclick="setSyncCode()">Start Studying</button>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { getFirestore, doc, setDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB6XEptBOgnJceezeG91z0Mpug_tQKm3gw",
+            authDomain: "pennington-flashcards.firebaseapp.com",
+            projectId: "pennington-flashcards",
+            storageBucket: "pennington-flashcards.firebasestorage.app",
+            messagingSenderId: "812143305002",
+            appId: "1:812143305002:web:7fb131c1d503750f78fe53"
+        };
+
+        let db = null;
+        let unsubscribe = null;
+
+        try {
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+        } catch (e) {
+            console.error('Firebase init failed:', e);
+        }
+
         const flashcards = [
             // Company Basics
             { id: 1, category: "Company Basics", front: "What is Pennington's AUM?", back: "~$4 billion ($3.95B as of Dec 2024)" },
@@ -214,29 +280,123 @@
             { id: 141, category: "People", photo: "https://images.squarespace-cdn.com/content/v1/611bf6efa3a9575b9bdd22c1/943dbabd-dc6d-455d-8349-0fdc3db5c40e/Bates_2356_500x500px_72dpi_Square.jpg", back: "Courtney Bates\nExecutive Assistant" }
         ];
 
-        let cardProgress = JSON.parse(localStorage.getItem('pennington-flashcards-v2') || '{}');
+        // State
+        let cardProgress = {};
         let currentMode = 'due';
         let currentCategory = 'all';
         let currentDeck = [];
         let currentIndex = 0;
         let isFlipped = false;
         let sessionStats = { correct: 0, incorrect: 0 };
+        let syncCode = localStorage.getItem('pennington-sync-code') || '';
 
         const categories = ['all', ...new Set(flashcards.map(c => c.category))];
 
-        flashcards.forEach(card => {
-            if (!cardProgress[card.id]) {
-                cardProgress[card.id] = { level: 0, nextReview: Date.now(), lastReview: null };
-            }
-        });
-        saveProgress();
-
+        // DOM elements
         const cardArea = document.getElementById('card-area');
         const categoriesEl = document.getElementById('categories');
         const progressEl = document.getElementById('progress');
         const masteredEl = document.getElementById('mastered');
         const learningEl = document.getElementById('learning');
         const totalEl = document.getElementById('total');
+        const syncModal = document.getElementById('sync-modal');
+        const syncCodeInput = document.getElementById('sync-code-input');
+        const syncCodeDisplay = document.getElementById('sync-code-display');
+        const syncStatusEl = document.getElementById('sync-status');
+
+        // Sync functions
+        window.showSyncModal = function() {
+            syncCodeInput.value = syncCode;
+            syncModal.style.display = 'flex';
+            syncCodeInput.focus();
+        };
+
+        window.setSyncCode = function() {
+            const code = syncCodeInput.value.trim().toLowerCase().replace(/\s+/g, '-');
+            if (!code) { alert('Please enter a sync code'); return; }
+            syncCode = code;
+            localStorage.setItem('pennington-sync-code', syncCode);
+            syncModal.style.display = 'none';
+            syncCodeDisplay.textContent = syncCode;
+            connectToFirebase();
+        };
+
+        syncCodeInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') window.setSyncCode();
+        });
+
+        function updateSyncStatus(status, message) {
+            syncStatusEl.className = 'sync-status ' + status;
+            syncStatusEl.textContent = message;
+        }
+
+        async function connectToFirebase() {
+            if (!db) {
+                updateSyncStatus('offline', 'Firebase not configured - using local storage');
+                loadFromLocalStorage();
+                return;
+            }
+            if (!syncCode) {
+                syncModal.style.display = 'flex';
+                return;
+            }
+            if (unsubscribe) unsubscribe();
+            updateSyncStatus('syncing', 'Connecting...');
+
+            try {
+                const docRef = doc(db, 'flashcard-progress', syncCode);
+                unsubscribe = onSnapshot(docRef, (docSnap) => {
+                    if (docSnap.exists()) {
+                        cardProgress = docSnap.data().progress || {};
+                        updateSyncStatus('synced', 'Synced');
+                    } else {
+                        cardProgress = {};
+                        updateSyncStatus('synced', 'Synced (new)');
+                    }
+                    initializeCardProgress();
+                    localStorage.setItem('pennington-flashcards-v2', JSON.stringify(cardProgress));
+                    buildDeck();
+                    renderCard();
+                }, (error) => {
+                    console.error('Firestore error:', error);
+                    updateSyncStatus('offline', 'Offline - using local data');
+                    loadFromLocalStorage();
+                });
+            } catch (error) {
+                console.error('Connection error:', error);
+                updateSyncStatus('offline', 'Connection failed');
+                loadFromLocalStorage();
+            }
+        }
+
+        async function saveProgress() {
+            localStorage.setItem('pennington-flashcards-v2', JSON.stringify(cardProgress));
+            if (!db || !syncCode) return;
+            try {
+                updateSyncStatus('syncing', 'Saving...');
+                const docRef = doc(db, 'flashcard-progress', syncCode);
+                await setDoc(docRef, { progress: cardProgress, lastUpdated: new Date().toISOString() });
+                updateSyncStatus('synced', 'Synced');
+            } catch (error) {
+                console.error('Save error:', error);
+                updateSyncStatus('offline', 'Save failed - stored locally');
+            }
+        }
+
+        function loadFromLocalStorage() {
+            cardProgress = JSON.parse(localStorage.getItem('pennington-flashcards-v2') || '{}');
+            initializeCardProgress();
+            buildDeck();
+            renderCard();
+        }
+
+        function initializeCardProgress() {
+            flashcards.forEach(card => {
+                if (!cardProgress[card.id]) {
+                    cardProgress[card.id] = { level: 0, nextReview: Date.now(), lastReview: null };
+                }
+            });
+        }
 
         function renderCategories() {
             categoriesEl.innerHTML = categories.map(cat =>
@@ -267,8 +427,11 @@
             if (currentCategory !== 'all') cards = cards.filter(c => c.category === currentCategory);
             if (currentMode === 'due') {
                 const now = Date.now();
-                cards = cards.filter(c => cardProgress[c.id].nextReview <= now || cardProgress[c.id].level === 0);
-                cards.sort((a, b) => cardProgress[a.id].level - cardProgress[b.id].level);
+                cards = cards.filter(c => {
+                    const p = cardProgress[c.id];
+                    return p && (p.nextReview <= now || p.level === 0);
+                });
+                cards.sort((a, b) => (cardProgress[a.id]?.level || 0) - (cardProgress[b.id]?.level || 0));
             } else if (currentMode === 'shuffle') {
                 cards = [...cards].sort(() => Math.random() - 0.5);
             }
@@ -283,13 +446,12 @@
             return Date.now() + (intervals[level] || intervals[5]);
         }
 
-        function saveProgress() {
-            localStorage.setItem('pennington-flashcards-v2', JSON.stringify(cardProgress));
-        }
-
         function updateStats() {
-            const mastered = flashcards.filter(c => cardProgress[c.id].level >= 5).length;
-            const learning = flashcards.filter(c => cardProgress[c.id].level > 0 && cardProgress[c.id].level < 5).length;
+            const mastered = flashcards.filter(c => cardProgress[c.id]?.level >= 5).length;
+            const learning = flashcards.filter(c => {
+                const l = cardProgress[c.id]?.level || 0;
+                return l > 0 && l < 5;
+            }).length;
             masteredEl.textContent = `Mastered: ${mastered}`;
             learningEl.textContent = `Learning: ${learning}`;
             totalEl.textContent = `Total: ${flashcards.length}`;
@@ -357,9 +519,9 @@
             }
         }
 
-        function flipCard() { isFlipped = !isFlipped; renderCard(); }
+        window.flipCard = function() { isFlipped = !isFlipped; renderCard(); };
 
-        function markCard(correct) {
+        window.markCard = function(correct) {
             const card = currentDeck[currentIndex];
             const progress = cardProgress[card.id];
             if (correct) { progress.level = Math.min(5, progress.level + 1); sessionStats.correct++; }
@@ -370,13 +532,14 @@
             currentIndex++;
             isFlipped = false;
             renderCard();
-        }
+        };
 
-        function restartSession() { buildDeck(); renderCard(); }
+        window.restartSession = function() { buildDeck(); renderCard(); };
 
+        // Initialize
+        syncCodeDisplay.textContent = syncCode || 'Not set';
         renderCategories();
-        buildDeck();
-        renderCard();
+        connectToFirebase();
     </script>
 </body>
 </html>
