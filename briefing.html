@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Briefing — Pennington</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+        .container { max-width: 700px; margin: 0 auto; padding-bottom: 40px; }
+
+        /* Top bar */
+        .top-bar {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .nav-link { color: #4a90d9; text-decoration: none; font-size: 0.8rem; }
+        .nav-link:hover { color: #6ab0f9; text-decoration: underline; }
+        .settings-btn {
+            background: none; border: none; color: #888; cursor: pointer;
+            font-size: 1.2rem; padding: 4px 8px; border-radius: 8px; transition: all 0.2s;
+        }
+        .settings-btn:hover { color: #e0e0e0; background: rgba(255,255,255,0.1); }
+
+        /* Header */
+        .header { text-align: center; margin-bottom: 24px; }
+        .header h1 { font-size: 1.5rem; color: #fff; margin-bottom: 6px; line-height: 1.4; }
+        .header .date-line { color: #999; font-size: 0.9rem; margin-top: 8px; }
+        .phase-badge {
+            display: inline-block; background: #4a90d9; color: #fff;
+            padding: 4px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;
+        }
+        .phase-progress {
+            background: rgba(255,255,255,0.08); border-radius: 10px;
+            height: 6px; margin-top: 12px; overflow: hidden;
+        }
+        .phase-progress-fill {
+            height: 100%; background: linear-gradient(90deg, #4a90d9, #44d944);
+            border-radius: 10px; transition: width 0.5s;
+        }
+
+        /* Listen */
+        .listen-controls { display: flex; gap: 10px; justify-content: center; margin-bottom: 28px; }
+        .btn-listen {
+            background: linear-gradient(145deg, #4a90d9 0%, #3a7bc8 100%);
+            border: none; color: #fff; padding: 14px 36px; border-radius: 30px;
+            font-size: 1.1rem; font-weight: 600; cursor: pointer;
+            transition: all 0.2s; display: flex; align-items: center; gap: 10px;
+        }
+        .btn-listen:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(74,144,217,0.4); }
+        .btn-listen:active { transform: translateY(0); }
+        .btn-listen.playing { background: linear-gradient(145deg, #d9a344 0%, #b8862e 100%); }
+        .btn-stop {
+            background: linear-gradient(145deg, #d94444 0%, #b33636 100%);
+            border: none; color: #fff; padding: 14px 20px; border-radius: 30px;
+            font-size: 1rem; cursor: pointer; transition: all 0.2s; display: none;
+        }
+        .btn-stop:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(217,68,68,0.4); }
+        .btn-stop.visible { display: block; }
+
+        /* Sections */
+        .section {
+            background: linear-gradient(145deg, #2a2a4a 0%, #1e1e3a 100%);
+            border-radius: 16px; padding: 24px; margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+        .section-title {
+            font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1.5px;
+            color: #4a90d9; margin-bottom: 14px; font-weight: 600;
+        }
+
+        /* Priorities */
+        .priority-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 1rem;
+        }
+        .priority-item:last-child { border-bottom: none; }
+        .priority-bullet { color: #4a90d9; font-weight: 700; flex-shrink: 0; }
+
+        /* Principle */
+        .principle-book { color: #888; font-size: 0.85rem; margin-bottom: 8px; }
+        .principle-text { font-size: 1.15rem; color: #fff; font-weight: 500; line-height: 1.5; margin-bottom: 12px; }
+        .principle-reminder { color: #ccc; font-size: 0.95rem; line-height: 1.5; margin-bottom: 10px; }
+        .principle-application { color: #4a90d9; font-size: 0.9rem; font-style: italic; line-height: 1.5; }
+
+        /* Mantra */
+        .mantra-text {
+            font-size: 1.3rem; color: #fff; text-align: center;
+            font-weight: 600; line-height: 1.5; padding: 10px 0; font-style: italic;
+        }
+
+        /* Person */
+        .person-name { font-size: 1.15rem; color: #fff; font-weight: 600; margin-bottom: 4px; }
+        .person-title { color: #888; font-size: 0.9rem; margin-bottom: 12px; }
+        .person-hook { color: #ccc; font-size: 0.95rem; line-height: 1.5; }
+        .person-hook strong { color: #4a90d9; }
+
+        /* Checklist */
+        .checklist-item {
+            display: flex; align-items: flex-start; gap: 12px;
+            padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .checklist-item:last-child { border-bottom: none; }
+        .checklist-bullet { color: #888; flex-shrink: 0; margin-top: 1px; }
+        .checklist-text { font-size: 0.95rem; color: #e0e0e0; }
+
+        /* Responsiveness */
+        .responsiveness { text-align: center; font-size: 0.95rem; color: #ccc; line-height: 1.6; }
+        .responsiveness strong { color: #d9a344; }
+
+        /* Weekend */
+        .weekend-note { color: #888; font-size: 0.95rem; text-align: center; font-style: italic; padding: 10px 0; }
+
+        /* Settings Modal */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7); display: flex; align-items: center;
+            justify-content: center; z-index: 1000; padding: 20px;
+        }
+        .modal {
+            background: linear-gradient(145deg, #2a2a4a 0%, #1e1e3a 100%);
+            border-radius: 16px; padding: 30px; max-width: 400px; width: 100%;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+        .modal h2 { color: #fff; margin-bottom: 12px; font-size: 1.3rem; }
+        .modal label { color: #ccc; font-size: 0.9rem; display: block; margin-bottom: 6px; }
+        .modal input {
+            width: 100%; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+            color: #e0e0e0; padding: 12px 14px; border-radius: 10px; font-size: 1rem;
+            outline: none; margin-bottom: 16px;
+        }
+        .modal input:focus { border-color: #4a90d9; }
+        .modal .btn-modal {
+            width: 100%; background: linear-gradient(145deg, #4a90d9 0%, #3a7bc8 100%);
+            border: none; color: #fff; padding: 14px; border-radius: 10px;
+            font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s; margin-bottom: 8px;
+        }
+        .modal .btn-modal:hover { transform: translateY(-1px); }
+        .modal .btn-cancel {
+            width: 100%; background: none; border: 1px solid rgba(255,255,255,0.2);
+            color: #999; padding: 12px; border-radius: 10px; font-size: 0.9rem;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .modal .btn-cancel:hover { border-color: rgba(255,255,255,0.4); color: #ccc; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="top-bar">
+            <div>
+                <a href="index.html" class="nav-link">Flashcards</a>
+                <span style="color:#444; margin: 0 6px;">|</span>
+                <a href="people.html" class="nav-link">People</a>
+            </div>
+            <button class="settings-btn" onclick="showSettings()" title="Settings">&#9881;</button>
+        </div>
+
+        <div class="header" id="header-section"></div>
+
+        <div class="listen-controls">
+            <button class="btn-listen" id="btn-listen" onclick="toggleListen()">
+                <span id="listen-icon">&#9654;</span> <span id="listen-label">Listen</span>
+            </button>
+            <button class="btn-stop" id="btn-stop" onclick="stopListen()">&#9632; Stop</button>
+        </div>
+
+        <div id="sections"></div>
+    </div>
+
+    <div class="modal-overlay" id="settings-modal" style="display: none;">
+        <div class="modal">
+            <h2>Settings</h2>
+            <label>Start Date (Day 1 at Pennington)</label>
+            <input type="date" id="start-date-input" value="2026-02-02">
+            <button class="btn-modal" onclick="saveSettings()">Save</button>
+            <button class="btn-cancel" onclick="hideSettings()">Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        // ── Config ──
+        const DEFAULT_START = '2026-02-02';
+        let startDate = new Date(localStorage.getItem('pennington-start-date') || DEFAULT_START);
+
+        // ── Phase Detection ──
+        function getPhase() {
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            const start = new Date(startDate);
+            start.setHours(0,0,0,0);
+            const diff = Math.floor((today - start) / 86400000);
+            if (diff < 0) return { name: 'Pre-Nashville', day: diff, progress: 0 };
+            if (diff <= 30) return { name: 'Days 1\u201330', day: diff, progress: diff / 30 };
+            if (diff <= 60) return { name: 'Days 31\u201360', day: diff, progress: (diff - 30) / 30 };
+            if (diff <= 90) return { name: 'Days 61\u201390', day: diff, progress: (diff - 60) / 30 };
+            return { name: 'Post-90', day: diff, progress: 1 };
+        }
+
+        function formatDate(d) {
+            const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+            const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+            return days[d.getDay()] + ', ' + months[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear();
+        }
+
+        function dayOfYear(d) {
+            const start = new Date(d.getFullYear(), 0, 0);
+            return Math.floor((d - start) / 86400000);
+        }
+
+        function esc(str) {
+            var d = document.createElement('div');
+            d.textContent = str;
+            return d.innerHTML;
+        }
+
+        // ── Content Data ──
+
+        var principles = {
+            1: { // Monday — Carnegie
+                book: 'How to Win Friends and Influence People \u2014 Dale Carnegie',
+                items: [
+                    { text: "Don\u2019t criticize, condemn, or complain. Give honest, sincere appreciation.", reminder: "Everyone wants to feel important and appreciated. You can\u2019t win arguments \u2014 even if you win the logic, you lose the person.", application: "Acknowledge good work before corrections. Frame requests in terms of what others want. Begin feedback with praise." },
+                    { text: "Be genuinely interested in others. Remember names. Listen well. Talk about their interests.", reminder: "People support what they help create. The best way to influence someone is to make them feel heard.", application: "In every 1:1, ask about them first. Let leadership feel ownership of changes. Ask questions rather than give orders." },
+                    { text: "Let the other person feel the idea is theirs. See things from their point of view.", reminder: "A drop of honey catches more flies than a gallon of gall. Show respect for others\u2019 opinions \u2014 never say \u2018you\u2019re wrong.\u2019", application: "When proposing process changes, frame as \u2018what if we tried\u2026\u2019 not \u2018we should do.\u2019 Let Brian feel ownership of finance strategy." }
+                ]
+            },
+            2: { // Tuesday — Slootman
+                book: 'Amp It Up \u2014 Frank Slootman',
+                items: [
+                    { text: "Raise your standards. Increase tempo. Sharpen focus.", reminder: "Most organizations operate below potential. Speed is competitive advantage. Say no to almost everything \u2014 2\u20133 focus areas max.", application: "Don\u2019t accept \u2018good enough\u2019 processes. Compress close cycles. Pick 2\u20133 major initiatives and execute with intensity." },
+                    { text: "Be a Driver, not a Passenger. Own outcomes end-to-end.", reminder: "Drivers ask \u2018what can I do?\u2019 Passengers watch. No spectators allowed. Your operating tempo is a choice.", application: "Own problems end-to-end. Don\u2019t wait to be told. Assess team capability quickly. You set the standard by what you tolerate." },
+                    { text: "Declare bankruptcy on broken systems. Don\u2019t polish what\u2019s broken \u2014 redesign it.", reminder: "Intensity wins. The biggest risk isn\u2019t moving too fast, it\u2019s not moving fast enough.", application: "Redesign broken systems from scratch. QuickBooks to Sage Intacct isn\u2019t a polish \u2014 it\u2019s a rebuild. Kill legacy approaches." }
+                ]
+            },
+            3: { // Wednesday — Gawande
+                book: 'The Checklist Manifesto \u2014 Atul Gawande',
+                items: [
+                    { text: "Complexity exceeds memory. Errors happen from ineptitude, not ignorance. Catch the dumb mistakes.", reminder: "Checklists are professionalism, not weakness. Consistent execution beats heroic saves. If you\u2019re making the same mistake twice, you need a checklist.", application: "Monthly close checklist. Capital calls checklist. Quarterly billing checklist. Fund reporting checklist." },
+                    { text: "Good checklists: 5\u20139 items, killer items only, precise wording, tied to workflow pause points.", reminder: "DO-CONFIRM: do from memory, then confirm. READ-DO: read each item, do it. Both have their place.", application: "Define WHEN each checklist runs. New client onboarding. Board/partner reporting. Make minimum necessary steps explicit." },
+                    { text: "Checklists free mental bandwidth and force communication at critical moments.", reminder: "They\u2019re not comprehensive guides or skill substitutes. They catch the items that get dropped under pressure.", application: "Free your mind for decision-making by offloading routine verification. What process made an error? Build a checklist for it." }
+                ]
+            },
+            4: { // Thursday — Pfeffer
+                book: 'Power: Why Some People Have It and Others Don\u2019t \u2014 Jeffrey Pfeffer',
+                items: [
+                    { text: "Performance alone doesn\u2019t guarantee success. Power is a learnable skill. Actively manage your reputation and visibility.", reminder: "Being good is necessary but insufficient. Relationships are strategic assets. Ask for what you want.", application: "Own financial data and reporting. Position yourself in strategy discussions. Be known for delivering decisions, not data dumps." },
+                    { text: "Build power through: control of resources, structural position, scarcity, visibility, and strategic networking.", reminder: "Your power sources to build: financial information dependency, decision-ready recommendations, process reliability, cross-entity visibility.", application: "Build relationships beyond finance. Speak with confidence. Create scarcity through deep understanding of the financial picture." },
+                    { text: "Power unused atrophies. Early wins establish credibility. Pick battles carefully.", reminder: "Power gaps to address: new to org, credibility deficit from predecessor, finance seen as back-office.", application: "Manage up by delivering what Brian wants before he asks. Establish credible early wins. Get in the room for strategic decisions." }
+                ]
+            },
+            5: { // Friday — Willink
+                book: 'Extreme Ownership \u2014 Jocko Willink & Leif Babin',
+                items: [
+                    { text: "Own everything. No excuses, no blaming. There are no bad teams, only bad leaders.", reminder: "If it\u2019s broken, it\u2019s your fault \u2014 which means you can fix it. Blame is the enemy of solutions. Default aggressive.", application: "Own outcomes in finance. Accept Brian\u2019s feedback without defensiveness. If the team underperforms, that\u2019s on you to fix." },
+                    { text: "Prioritize and Execute. Cover and Move. Keep it Simple.", reminder: "When multiple priorities hit: relax, look around, make a call. Teams work together, not compete. If they don\u2019t understand, you haven\u2019t explained well enough.", application: "When the close, capital calls, and reporting all hit at once \u2014 prioritize, execute, move on. Finance supports the whole firm." },
+                    { text: "Discipline Equals Freedom. Lead Up and Down the Chain of Command.", reminder: "If your boss doesn\u2019t give you what you need, you failed to communicate. Structure and routine prevent reactive chaos.", application: "Use checklists and SOPs to reduce firefighting. Lead up by communicating clearly to Brian. Train team for independent decisions." }
+                ]
+            },
+            0: { // Saturday & Sunday — Sterner
+                book: 'The Practicing Mind \u2014 Thomas M. Sterner',
+                items: [
+                    { text: "Focus on process, and the product takes care of itself. Goals are a compass, not a destination.", reminder: "Don\u2019t fixate on \u2018becoming CFO\u2019 \u2014 focus on today\u2019s excellence. Impatience is attachment to a future outcome.", application: "Full attention during close and meetings. Trust the 90-day process. When process IS the goal, nothing to be impatient about." },
+                    { text: "DOC Method: Do (deliberate action), Observe (without judgment), Correct, Repeat.", reminder: "Non-judgment paradoxically helps improvement. Equanimity from observing without labeling good/bad.", application: "Monthly close: do-observe-correct without self-judgment. When mistakes happen, observe-correct without spiraling." },
+                    { text: "Four S\u2019s: Simplify, Small, Short, Slow. Single-task. Always practicing something \u2014 do it deliberately.", reminder: "Multitasking erodes self-control. Slow is smooth, smooth is fast. The present moment is the only place growth happens.", application: "ERP migration feels overwhelming? Use Four S\u2019s. Match Brian\u2019s focused intensity. Build daily habits that compound." }
+                ]
+            }
+        };
+
+        var mantras = [
+            "If it\u2019s not written down, it doesn\u2019t exist.",
+            "Checklist first, then execute.",
+            "Don\u2019t bring data, bring decisions.",
+            "I might make mistakes, but I will never be unresponsive.",
+            "Process over product.",
+            "Am I being a driver or a passenger?"
+        ];
+
+        var people = [
+            { name: 'Brian Gaister', title: 'Co-Founder & CEO', hook: 'Ask about Pennington\u2019s founding story and his vision for the next chapter. Listen for what he values most in his finance leader.' },
+            { name: 'Rodd Macklin', title: 'Co-Founder, Senior Managing Director (Former CFO)', hook: 'Ask about his time as CFO \u2014 what worked, what he\u2019d do differently. Nearly 20 years as CFO at PE firms with $2B+ AUM.' },
+            { name: 'Guy Scott', title: 'Chief Compliance Officer', hook: 'Ask about compliance challenges at a multi-family office. Finance and compliance must work closely on fee disclosures and regulatory reporting.' },
+            { name: 'Taylor Coe', title: 'Managing Director, Real Estate (PREP)', hook: 'Ask about the RE portfolio and what excites them. New business line launched Jan 2024 \u2014 needs reporting/accounting structure clarified.' },
+            { name: 'Alex Rongione', title: 'Managing Director, Real Estate (PREP)', hook: 'CFA holder with JP Morgan pedigree and $1.7B+ deal experience. Strong analytical rigor \u2014 understands structuring.' },
+            { name: 'Wendy Xu', title: 'Managing Director, Private Markets', hook: 'Goldman Sachs background, MBA from Wharton, Princeton undergrad. Ask about deal flow and investment performance tracking.' },
+            { name: 'Megan Bleil', title: 'Partner, Family Office Advisor', hook: 'Founding team member since 2016. Knows client relationships intimately. Valuable for understanding firm history.' },
+            { name: 'Marilyn Santiago', title: 'Partner, Head of Relationship Management', hook: '23 years at BNY, new hire (Sept 2025). Ask about her client service frameworks.' },
+            { name: 'Nadia Khan', title: 'Senior Staff Accountant (Your Direct Report)', hook: 'CPA and CFE. Ask about her background, what she enjoys, what frustrates her. Your only direct report after John leaves.' },
+            { name: 'Chad Lilly', title: 'VP, Head of Talent Acquisition', hook: 'Your internal champion \u2014 likely advocated for your hire. Thank him and keep the relationship warm.' },
+            { name: 'Courtney Bates', title: 'Executive Assistant to Brian', hook: 'Brian\u2019s gatekeeper. Introduce early, respect her time. Getting on Brian\u2019s calendar goes through her.' },
+            { name: 'Jill Sheppard Davenport', title: 'Partner, Director of Health & Wellness', hook: 'Culture carrier \u2014 unique wellness focus differentiates Pennington. Harvard Kennedy School MPP. Learn team culture from her.' },
+            { name: 'John Rizas', title: 'Director of Finance (Transitioning Out)', hook: '90-day transition window. 12+ years institutional knowledge. Learn from him quickly.' },
+            { name: 'Odessa Clear', title: 'Operations Associate', hook: 'Organized the Nashville retreat. Thank her for the work. Ask how long she\u2019s been at Pennington.' }
+        ];
+
+        var phaseChecklists = {
+            'Pre-Nashville': [
+                'Pack professional attire for Nashville retreat',
+                'Drill flashcards \u2014 company facts, fund details, people',
+                'Review all dossiers one more time',
+                'Prepare I-9 documents and onboarding paperwork',
+                'Study operating system books principles',
+                'Plan 1:1 conversation starters for key people',
+                'Review Nashville retreat agenda and logistics',
+                'Confirm flights and hotel details'
+            ],
+            'Days 1\u201330': [
+                'Schedule 1:1s with every team member and key stakeholder',
+                'Learn all financial systems (QuickBooks, Addepar)',
+                'Document current state of all processes from John',
+                'Understand the monthly close process end-to-end',
+                'Map all fund structures and reporting obligations',
+                'Identify 2\u20133 quick wins to build credibility',
+                'Establish daily/weekly rhythms and routines',
+                'Build relationship with Brian \u2014 learn his communication style',
+                'Understand Nadia\u2019s strengths and development areas',
+                'Get access to all systems and accounts'
+            ],
+            'Days 31\u201360': [
+                'Deliver first quick win and communicate the impact',
+                'Own the monthly close process independently',
+                'Build credibility through reliable execution',
+                'Start addressing process gaps with checklists',
+                'Deepen cross-functional relationships',
+                'Begin Sage Intacct migration planning',
+                'Establish regular reporting cadence with Brian',
+                'Identify team hiring needs post-John departure'
+            ],
+            'Days 61\u201390': [
+                'Launch first strategic project (ERP migration or process redesign)',
+                'Present 90-day roadmap to Brian',
+                'Evaluate team performance and hiring plan',
+                'Establish finance as strategic partner, not back-office',
+                'Build automated reporting where possible',
+                'Create SOPs for all critical finance processes',
+                'Deliver a meaningful process improvement',
+                'Set 6-month and 12-month goals with Brian'
+            ],
+            'Post-90': [
+                'Execute on strategic roadmap',
+                'Continue building team and capabilities',
+                'Drive Sage Intacct migration forward',
+                'Expand influence into strategic decisions',
+                'Mentor and develop Nadia',
+                'Review and refine all processes quarterly'
+            ]
+        };
+
+        var defaultPriorities = {
+            'Pre-Nashville': ['Drill flashcards for 20 minutes', 'Review one dossier in depth', 'Pack one category of items'],
+            'Days 1\u201330': ['Schedule next 1:1', 'Document one process from John', 'Learn one new system workflow'],
+            'Days 31\u201360': ['Execute on quick win', 'Review close checklist', 'Connect with one cross-functional partner'],
+            'Days 61\u201390': ['Progress strategic project', 'Review team performance', 'Prepare update for Brian'],
+            'Post-90': ['Execute roadmap item', 'Develop team member', 'Drive process improvement']
+        };
+
+        // ── Render ──
+        function render() {
+            var today = new Date();
+            var phase = getPhase();
+            var dow = today.getDay();
+            var doy = dayOfYear(today);
+
+            // Header
+            var headerHtml = '<h1>Good morning, Derek.</h1>';
+            headerHtml += '<div class="date-line">' + formatDate(today) + '</div>';
+            headerHtml += '<div style="margin-top:10px;"><span class="phase-badge">' + phase.name;
+            if (phase.day >= 0) headerHtml += ' \u2014 Day ' + phase.day;
+            headerHtml += '</span></div>';
+            if (phase.day >= 0 && phase.day <= 90) {
+                headerHtml += '<div class="phase-progress"><div class="phase-progress-fill" style="width:' + Math.min(phase.progress * 100, 100) + '%"></div></div>';
+            }
+            document.getElementById('header-section').innerHTML = headerHtml;
+
+            // Sections
+            var html = '';
+
+            // 1. Priorities
+            var priorities = defaultPriorities[phase.name] || defaultPriorities['Days 1\u201330'];
+            html += '<div class="section"><div class="section-title">Today\u2019s Priorities</div>';
+            for (var i = 0; i < priorities.length; i++) {
+                html += '<div class="priority-item"><span class="priority-bullet">\u25B8</span> ' + esc(priorities[i]) + '</div>';
+            }
+            html += '</div>';
+
+            // 2. Operating Principle
+            var bookDay = (dow === 0 || dow === 6) ? 0 : dow;
+            var book = principles[bookDay];
+            var pi = doy % book.items.length;
+            var p = book.items[pi];
+            html += '<div class="section"><div class="section-title">Operating Principle of the Day</div>';
+            html += '<div class="principle-book">' + book.book + '</div>';
+            html += '<div class="principle-text">\u201C' + esc(p.text) + '\u201D</div>';
+            html += '<div class="principle-reminder">' + esc(p.reminder) + '</div>';
+            html += '<div class="principle-application">' + esc(p.application) + '</div>';
+            html += '</div>';
+
+            // 3. Mantra
+            var mi = doy % mantras.length;
+            html += '<div class="section"><div class="section-title">Daily Mantra</div>';
+            html += '<div class="mantra-text">\u201C' + esc(mantras[mi]) + '\u201D</div></div>';
+
+            // 4. Person
+            if (dow === 0 || dow === 6) {
+                html += '<div class="section"><div class="section-title">Person to Connect With</div>';
+                html += '<div class="weekend-note">It\u2019s the weekend. Rest, recharge, and prepare for next week.</div></div>';
+            } else {
+                var person = people[doy % people.length];
+                html += '<div class="section"><div class="section-title">Person to Connect With</div>';
+                html += '<div class="person-name">' + esc(person.name) + '</div>';
+                html += '<div class="person-title">' + esc(person.title) + '</div>';
+                html += '<div class="person-hook"><strong>Conversation hook:</strong> ' + esc(person.hook) + '</div></div>';
+            }
+
+            // 5. Phase Checklist
+            var checklist = phaseChecklists[phase.name] || phaseChecklists['Days 1\u201330'];
+            html += '<div class="section"><div class="section-title">Phase Checklist \u2014 ' + phase.name + '</div>';
+            for (var j = 0; j < checklist.length; j++) {
+                html += '<div class="checklist-item"><span class="checklist-bullet">\u25CB</span><span class="checklist-text">' + esc(checklist[j]) + '</span></div>';
+            }
+            html += '</div>';
+
+            // 6. Responsiveness
+            html += '<div class="section"><div class="section-title">Responsiveness Reminder</div>';
+            html += '<div class="responsiveness"><strong>Acknowledge within 1 hour.</strong><br>';
+            html += '<strong>Report errors within 30 minutes.</strong><br>';
+            html += '<strong>Close every loop.</strong></div></div>';
+
+            document.getElementById('sections').innerHTML = html;
+        }
+
+        // ── Settings ──
+        window.showSettings = function() {
+            document.getElementById('settings-modal').style.display = 'flex';
+            document.getElementById('start-date-input').value = startDate.toISOString().split('T')[0];
+        };
+        window.hideSettings = function() {
+            document.getElementById('settings-modal').style.display = 'none';
+        };
+        window.saveSettings = function() {
+            var val = document.getElementById('start-date-input').value;
+            if (val) {
+                startDate = new Date(val);
+                localStorage.setItem('pennington-start-date', val);
+            }
+            hideSettings();
+            render();
+        };
+
+        // ── Speech ──
+        var speechQueue = [];
+        var isSpeaking = false;
+
+        function buildSpeechText() {
+            var today = new Date();
+            var phase = getPhase();
+            var dow = today.getDay();
+            var doy = dayOfYear(today);
+            var texts = [];
+
+            texts.push('Good morning, Derek. Today is ' + formatDate(today) + '. You\u2019re in ' + phase.name + '.');
+
+            var priorities = defaultPriorities[phase.name] || defaultPriorities['Days 1\u201330'];
+            texts.push('Today\u2019s priorities: ' + priorities.map(function(p, i) { return (i+1) + '. ' + p; }).join('. ') + '.');
+
+            var bookDay = (dow === 0 || dow === 6) ? 0 : dow;
+            var book = principles[bookDay];
+            var pi = doy % book.items.length;
+            var p = book.items[pi];
+            texts.push('Operating principle from ' + book.book + ': ' + p.text + '. ' + p.reminder + '. At Pennington: ' + p.application);
+
+            texts.push('Daily mantra: ' + mantras[doy % mantras.length]);
+
+            if (dow !== 0 && dow !== 6) {
+                var person = people[doy % people.length];
+                texts.push('Person to connect with today: ' + person.name + ', ' + person.title + '. ' + person.hook);
+            }
+
+            texts.push('Responsiveness reminder: Acknowledge within 1 hour. Report errors within 30 minutes. Close every loop.');
+
+            return texts;
+        }
+
+        window.toggleListen = function() {
+            if (isSpeaking) {
+                if (speechSynthesis.paused) {
+                    speechSynthesis.resume();
+                    document.getElementById('listen-label').textContent = 'Pause';
+                    document.getElementById('listen-icon').innerHTML = '\u275A\u275A';
+                } else {
+                    speechSynthesis.pause();
+                    document.getElementById('listen-label').textContent = 'Resume';
+                    document.getElementById('listen-icon').innerHTML = '\u25B6';
+                }
+                return;
+            }
+            isSpeaking = true;
+            speechQueue = buildSpeechText();
+            document.getElementById('btn-listen').classList.add('playing');
+            document.getElementById('listen-label').textContent = 'Pause';
+            document.getElementById('listen-icon').innerHTML = '\u275A\u275A';
+            document.getElementById('btn-stop').classList.add('visible');
+            speakNext();
+        };
+
+        function speakNext() {
+            if (speechQueue.length === 0) { resetSpeechUI(); return; }
+            var text = speechQueue.shift();
+            var utt = new SpeechSynthesisUtterance(text);
+            utt.rate = 0.95;
+            utt.onend = function() { setTimeout(speakNext, 600); };
+            utt.onerror = function(e) {
+                if (e.error !== 'canceled') console.error('Speech error:', e);
+                if (speechQueue.length > 0) setTimeout(speakNext, 300);
+                else resetSpeechUI();
+            };
+            speechSynthesis.speak(utt);
+        }
+
+        window.stopListen = function() {
+            speechSynthesis.cancel();
+            speechQueue = [];
+            resetSpeechUI();
+        };
+
+        function resetSpeechUI() {
+            isSpeaking = false;
+            document.getElementById('btn-listen').classList.remove('playing');
+            document.getElementById('listen-label').textContent = 'Listen';
+            document.getElementById('listen-icon').innerHTML = '\u25B6';
+            document.getElementById('btn-stop').classList.remove('visible');
+        }
+
+        // ── Init ──
+        render();
+    </script>
+</body>
+</html>
